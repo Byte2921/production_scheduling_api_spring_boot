@@ -1,7 +1,8 @@
 package com.production.scheduling.api;
 
 import com.production.scheduling.exceptions.ProductNotFoundException;
-import com.production.scheduling.logic.ProductLogic;
+import com.production.scheduling.logic.ProductionLogic;
+import com.production.scheduling.model.PlannedProductionTime;
 import com.production.scheduling.model.Product;
 import com.production.scheduling.repository.ProductRepository;
 import org.slf4j.Logger;
@@ -36,7 +37,7 @@ public class SchedulingController {
     @PostMapping("/products/new")
     public Product newProduct(@RequestBody Product product) {
         log.info("Created new product with parameters: {}", product);
-        return productRepository.save(product);
+        return productRepository.save(ProductionLogic.CreateNewProduct(product));
     }
 
     @DeleteMapping("/products/{id}")
@@ -45,9 +46,10 @@ public class SchedulingController {
         productRepository.deleteById(id);
     }
 
-    @PostMapping("/products/move/{id}/{planStart}/{planEnd}")
-    public Product moveProduct(@PathVariable Long id, @PathVariable LocalDateTime planStart, @PathVariable LocalDateTime planEnd) {
-        log.info("Moving product with id: {} to new scheduled date between {} and {}", id, planStart, planEnd);
-        return productRepository.moveProduct(planStart, planEnd, ProductLogic.calculateNewDuration(planStart, planEnd), LocalDateTime.now(), System.getProperty("user.name"), id);
+    @PostMapping(value = "/products/move/{id}")
+    public int moveProduct(@PathVariable Long id, @RequestBody PlannedProductionTime dates) {
+        log.info("Moving product with id: {} to new scheduled date between {} and {}", id, dates.getPlanStart(), dates.getPlanEnd());
+        return productRepository.moveProduct(dates.getPlanStart(), dates.getPlanEnd(),
+                ProductionLogic.calculateWorkTimeLength(dates.getPlanStart(), dates.getPlanEnd()), LocalDateTime.now(), System.getProperty("user.name"), id);
     }
 }
