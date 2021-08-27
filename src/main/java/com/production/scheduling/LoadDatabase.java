@@ -2,6 +2,7 @@ package com.production.scheduling;
 
 import com.production.scheduling.model.Operation;
 import com.production.scheduling.model.Product;
+import com.production.scheduling.model.Status;
 import com.production.scheduling.model.Workplace;
 import com.production.scheduling.repository.OperationRepository;
 import com.production.scheduling.repository.ProductRepository;

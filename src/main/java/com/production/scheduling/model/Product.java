@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
-@Table(name = "PRODUCTS", uniqueConstraints = {@UniqueConstraint(columnNames = {"id"})} )
+@Table(name = "PRODUCTS", uniqueConstraints = {@UniqueConstraint(columnNames = {"id"})})
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,12 +30,13 @@ public class Product {
     private String createdBy;
     private LocalDateTime modified;
     private String modifiedBy;
+    private Status status;
 
     public Product() {}
 
-    public Product(LocalDateTime planStart, LocalDateTime planEnd, Long planDuration, LocalDateTime actualStart, LocalDateTime actualEnd,
-                   Long actualDuration, String description, Workplace workplace, Operation operation, LocalDateTime created, String createdBy,
-                   LocalDateTime modified, String modifiedBy) {
+    public Product(LocalDateTime planStart, LocalDateTime planEnd, Long planDuration, LocalDateTime actualStart,
+                   LocalDateTime actualEnd, Long actualDuration, String description, Workplace workplace, Operation operation,
+                   LocalDateTime created, String createdBy, LocalDateTime modified, String modifiedBy) {
         this.planStart = planStart;
         this.planEnd = planEnd;
         this.planDuration = planDuration;
@@ -49,6 +50,7 @@ public class Product {
         this.createdBy = createdBy;
         this.modified = modified;
         this.modifiedBy = modifiedBy;
+        this.status = Status.WAITING;
     }
 
     public Long getId() {
@@ -163,17 +165,29 @@ public class Product {
         this.modifiedBy = modifiedBy;
     }
 
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Product product = (Product) o;
-        return Objects.equals(id, product.id) && Objects.equals(planStart, product.planStart) && Objects.equals(planEnd, product.planEnd) && Objects.equals(planDuration, product.planDuration) && Objects.equals(actualStart, product.actualStart) && Objects.equals(actualEnd, product.actualEnd) && Objects.equals(actualDuration, product.actualDuration) && Objects.equals(description, product.description) && Objects.equals(workplace, product.workplace) && Objects.equals(operation, product.operation) && Objects.equals(created, product.created) && Objects.equals(createdBy, product.createdBy) && Objects.equals(modified, product.modified) && Objects.equals(modifiedBy, product.modifiedBy);
+        return Objects.equals(id, product.id) && Objects.equals(planStart, product.planStart) && Objects.equals(planEnd, product.planEnd) &&
+                Objects.equals(planDuration, product.planDuration) && Objects.equals(actualStart, product.actualStart) && Objects.equals(actualEnd, product.actualEnd) &&
+                Objects.equals(actualDuration, product.actualDuration) && Objects.equals(description, product.description) && Objects.equals(workplace, product.workplace) &&
+                Objects.equals(operation, product.operation) && Objects.equals(created, product.created) && Objects.equals(createdBy, product.createdBy) && Objects.equals(modified, product.modified) &&
+                Objects.equals(modifiedBy, product.modifiedBy) && status == product.status;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, planStart, planEnd, planDuration, actualStart, actualEnd, actualDuration, description, workplace, operation, created, createdBy, modified, modifiedBy);
+        return Objects.hash(id, planStart, planEnd, planDuration, actualStart, actualEnd, actualDuration, description, workplace, operation, created, createdBy, modified, modifiedBy, status);
     }
 
     @Override
@@ -193,6 +207,7 @@ public class Product {
                 ", createdBy='" + createdBy + '\'' +
                 ", modified=" + modified +
                 ", modifiedBy='" + modifiedBy + '\'' +
+                ", status=" + status +
                 '}';
     }
 }
