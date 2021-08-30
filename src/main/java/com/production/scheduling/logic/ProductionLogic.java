@@ -1,42 +1,39 @@
 package com.production.scheduling.logic;
 
-import com.production.scheduling.LoadDatabase;
 import com.production.scheduling.model.*;
 import com.production.scheduling.repository.OperationRepository;
 import com.production.scheduling.repository.WorkplaceRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Component
 public class ProductionLogic {
 
+    private static final int DIVIDER = 60;
+    private static final long DEFAULT_WORKING_TIME = 100;
     @Autowired
-    OperationRepository operationRepository;
+    private OperationRepository operationRepository;
     @Autowired
-    WorkplaceRepository workplaceRepository;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(LoadDatabase.class);
+    private WorkplaceRepository workplaceRepository;
 
     public ProductionLogic() {}
 
     public Long calculateWorkTimeLength(LocalDateTime planStart, LocalDateTime planEnd) {
-        return Duration.between(planStart, planEnd).getSeconds() / 60;
+        return Duration.between(planStart, planEnd).getSeconds() / DIVIDER;
     }
 
     public Product createNewProduct(ScheduleItem scheduleItem) {
         Product product = new Product();
         product.setPlanStart(scheduleItem.getPlanStart());
-        product.setPlanEnd(scheduleItem.getPlanStart().plusMinutes(100));
+        product.setPlanEnd(scheduleItem.getPlanStart().plusMinutes(DEFAULT_WORKING_TIME));
         product.setPlanDuration(calculateWorkTimeLength(product.getPlanStart(), product.getPlanEnd()));
         product.setDescription(scheduleItem.getDescription());
         assignWorkplace(product, scheduleItem.getWorkplaceId());
         assignOperation(product, scheduleItem.getOperationId());
         signNewProduct(product);
+        product.setStatus(Status.WAITING);
         return product;
     }
 
@@ -59,7 +56,6 @@ public class ProductionLogic {
     }
 
     private void assignWorkplace(Product product, Long workplaceId) {
-        Workplace workplace = workplaceRepository.getById(workplaceId);
         product.setWorkplace(workplaceRepository.getById(workplaceId));
     }
 

@@ -35,7 +35,6 @@ public class Product {
     private LocalDateTime modified;
     @Column(columnDefinition = "VARCHAR(255) default null")
     private String modifiedBy;
-    @Column(columnDefinition = "INTEGER default 0")
     private Status status;
 
     public Product() {}
