@@ -2,7 +2,6 @@ package com.production.scheduling;
 
 import com.production.scheduling.model.Operation;
 import com.production.scheduling.model.Product;
-import com.production.scheduling.model.Status;
 import com.production.scheduling.model.Workplace;
 import com.production.scheduling.repository.OperationRepository;
 import com.production.scheduling.repository.ProductRepository;
@@ -19,7 +18,7 @@ import java.time.Month;
 @Configuration
 public class LoadDatabase {
 
-    private static final Logger log = LoggerFactory.getLogger(LoadDatabase.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoadDatabase.class);
 
     @Bean
     CommandLineRunner initDatabase(OperationRepository operationRepository, WorkplaceRepository workplaceRepository, ProductRepository productRepository) {
@@ -55,13 +54,13 @@ public class LoadDatabase {
                     null,
                     null);
 
-            log.info("Preloading " + operationRepository.save(operation1));
-            log.info("Preloading " + workplaceRepository.save(workplace1));
-            log.info("Preloading" + productRepository.save(product1));
+            LOGGER.info("Preloading " + operationRepository.save(operation1));
+            LOGGER.info("Preloading " + workplaceRepository.save(workplace1));
+            LOGGER.info("Preloading" + productRepository.save(product1));
 
-            log.info("Preloading " + operationRepository.save(operation2));
-            log.info("Preloading " + workplaceRepository.save(workplace2));
-            log.info("Preloading" + productRepository.save(product2));
+            LOGGER.info("Preloading " + operationRepository.save(operation2));
+            LOGGER.info("Preloading " + workplaceRepository.save(workplace2));
+            LOGGER.info("Preloading" + productRepository.save(product2));
         };
     }
 }

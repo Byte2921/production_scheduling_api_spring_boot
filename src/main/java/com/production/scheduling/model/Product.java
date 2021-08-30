@@ -16,8 +16,11 @@ public class Product {
     private LocalDateTime planStart;
     private LocalDateTime planEnd;
     private Long planDuration;
+    @Column(columnDefinition = "TIMESTAMP default null")
     private LocalDateTime actualStart;
+    @Column(columnDefinition = "TIMESTAMP default null")
     private LocalDateTime actualEnd;
+    @Column(columnDefinition = "BIGINT default null")
     private Long actualDuration;
     private String description;
     @OneToOne
@@ -28,8 +31,11 @@ public class Product {
     private Operation operation;
     private LocalDateTime created;
     private String createdBy;
+    @Column(columnDefinition = "TIMESTAMP default null")
     private LocalDateTime modified;
+    @Column(columnDefinition = "VARCHAR(255) default null")
     private String modifiedBy;
+    @Column(columnDefinition = "INTEGER default 0")
     private Status status;
 
     public Product() {}

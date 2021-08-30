@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/operation/tasks/")
+@RequestMapping("/api/operation/tasks")
 public class OperationController {
     @Autowired
     public OperationRepository operationRepository;
