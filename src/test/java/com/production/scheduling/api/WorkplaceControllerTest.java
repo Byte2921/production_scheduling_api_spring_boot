@@ -79,12 +79,12 @@ class WorkplaceControllerTest {
     void searchingWithNotExistingIdReturnsNotFound() throws Exception {
         Mockito.when(workplaceRepository
                         .findById(5L))
-                .thenReturn(null);
+                .thenThrow(WorkplaceNotFoundException.class);
 
         mockMvc.perform(MockMvcRequestBuilders
                         .get("/api/workplace/tasks/workplaces/5")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(mvcResult -> assertTrue(mvcResult.getResolvedException() instanceof WorkplaceNotFoundException));
     }
 
