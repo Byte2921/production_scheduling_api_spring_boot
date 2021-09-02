@@ -1,11 +1,9 @@
 package com.production.scheduling.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.production.scheduling.exceptions.ProductNotFoundException;
 import com.production.scheduling.logic.ProductionLogic;
-import com.production.scheduling.model.Operation;
-import com.production.scheduling.model.Product;
-import com.production.scheduling.model.ScheduleItem;
-import com.production.scheduling.model.Workplace;
+import com.production.scheduling.model.*;
 import com.production.scheduling.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -137,22 +135,83 @@ class ProductControllerTest {
     }
 
     @Test
-    void moveProduct() {
+    void moveProductReturnsSuccess() throws Exception {
+        PlannedProductionTime time = new PlannedProductionTime(LocalDateTime.now(), LocalDateTime.now().plusMinutes(100));
+
+        Mockito.when(productRepository
+                        .save(productionLogic.updateProductTimeSpan(time, product1)))
+                .thenReturn(product1);
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.put("/api/product/tasks/products/move/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(this.mapper.writeValueAsString(time));
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isOk());
     }
 
     @Test
-    void startProduction() {
+    void startProductionReturnsSuccess() throws Exception {
+        Mockito.when(productRepository
+                        .getById(1L))
+                .thenReturn(product1);
+
+        Mockito.when(productRepository
+                        .save(productionLogic.start(product1)))
+                .thenReturn(product1);
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .put("/api/product/tasks/products/start/1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 
     @Test
-    void finishProduction() {
+    void finishWaitingProductionReturnsNotFound() throws Exception {
+
+        Mockito.when(productRepository
+                        .getById(1L))
+                .thenReturn(product1);
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .put("/api/product/tasks/products/finish/1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    void cancelProduction() {
+    void cancelProductionReturnsSuccess() throws Exception {
+        product1.setStatus(Status.IN_PROGRESS);
+
+        Mockito.when(productRepository
+                        .getById(1L))
+                .thenReturn(product1);
+
+        Mockito.when(productRepository
+                        .save(productionLogic.cancel(product1)))
+                .thenReturn(product1);
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .put("/api/product/tasks/products/cancel/1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 
     @Test
-    void undoLastAction() {
+    void undoLastActionReturnsSuccess() throws Exception {
+        product1.setStatus(Status.COMPLETED);
+
+        Mockito.when(productRepository
+                        .getById(1L))
+                .thenReturn(product1);
+        Mockito.when(productRepository
+                        .save(productionLogic.undoLastAction(product1)))
+                .thenReturn(product1);
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .put("/api/product/tasks/products/undo/1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 }
