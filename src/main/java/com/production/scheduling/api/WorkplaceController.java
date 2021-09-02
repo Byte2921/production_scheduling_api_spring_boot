@@ -13,7 +13,7 @@ import java.util.List;
 public class WorkplaceController {
 
     @Autowired
-    public WorkplaceRepository workplaceRepository;
+    private WorkplaceRepository workplaceRepository;
 
     @GetMapping("/workplaces")
     public List<Workplace> getAllWorkplaces() {

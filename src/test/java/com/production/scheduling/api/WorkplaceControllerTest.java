@@ -1,6 +1,5 @@
 package com.production.scheduling.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.production.scheduling.exceptions.WorkplaceNotFoundException;
 import com.production.scheduling.model.Workplace;
@@ -8,15 +7,11 @@ import com.production.scheduling.repository.WorkplaceRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -47,7 +42,6 @@ class WorkplaceControllerTest {
         List<Workplace> workplaces = new ArrayList<>();
         workplaces.add(workplace1);
         workplaces.add(workplace2);
-        String expected = "[{\"id\":1,\"name\":\"Building machine\"},{\"id\":2,\"name\":\"Packing machine\"}]";
 
         Mockito.when(workplaceRepository
                         .findAll())
