@@ -6,6 +6,7 @@ import com.production.scheduling.logic.ProductionLogic;
 import com.production.scheduling.model.*;
 import com.production.scheduling.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -162,9 +163,9 @@ class ProductControllerTest {
 
     @Test
     void finishWaitingProductionReturnsNotFound() throws Exception {
-        Mockito.when(productionLogic
-                        .finish(product1.getId()))
-                .thenThrow(ProductNotFoundException.class);
+        Mockito.doThrow(ProductNotFoundException.class)
+                        .when(productionLogic)
+                                .finish(1L);
 
         mockMvc.perform(MockMvcRequestBuilders
                         .put("/api/product/tasks/products/finish/1")
