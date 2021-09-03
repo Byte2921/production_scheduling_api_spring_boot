@@ -37,7 +37,9 @@ public class Product {
     private String modifiedBy;
     private Status status;
 
-    public Product() {}
+    public Product() {
+        this.status = Status.WAITING;
+    }
 
     public Product(LocalDateTime planStart, LocalDateTime planEnd, Long planDuration, LocalDateTime actualStart,
                    LocalDateTime actualEnd, Long actualDuration, String description, Workplace workplace, Operation operation,

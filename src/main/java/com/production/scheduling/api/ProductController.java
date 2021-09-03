@@ -17,70 +17,50 @@ import java.util.List;
 public class ProductController {
 
     @Autowired
-    ProductRepository productRepository;
-    @Autowired
-    ProductionLogic logic;
+    private ProductionLogic logic;
 
     @GetMapping("/products")
     public List<Product> getAllProducts() {
-        return productRepository.findAll();
+        return logic.findAll();
     }
 
     @GetMapping("/products/{id}")
     public Product getProductById(@PathVariable Long id) {
-        return productRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException(id));
+        return logic.findById(id);
     }
 
     @PostMapping("/products/new")
     public Product newProduct(@RequestBody ScheduleItem scheduleItem) {
-        return productRepository.save(logic.createNewProduct(scheduleItem));
+        return logic.createNewProduct(scheduleItem);
     }
 
     @DeleteMapping("/products/{id}")
     public void deleteProduct(@PathVariable Long id) {
-        productRepository.deleteById(id);
+        logic.deleteById(id);
     }
 
     @PutMapping(value = "/products/move/{id}")
     public Product moveProduct(@PathVariable Long id, @RequestBody PlannedProductionTime dates) {
-        Product product = productRepository.getById(id);
-        return productRepository.save(logic.updateProductTimeSpan(dates, product));
+        return logic.updateProductTimeSpan(dates, id);
     }
 
     @PutMapping("/products/start/{id}")
     public Product startProduction(@PathVariable Long id) {
-        Product product = productRepository.getById(id);
-        if (product.getStatus() == Status.WAITING) {
-            return productRepository.save(logic.start(product));
-        }
-        throw new ProductNotFoundException(id);
+        return logic.start(id);
     }
 
     @PutMapping("/products/finish/{id}")
     public Product finishProduction(@PathVariable Long id) {
-        Product product = productRepository.getById(id);
-        if (product.getStatus() == Status.IN_PROGRESS) {
-            return productRepository.save(logic.finish(product));
-        }
-        throw new ProductNotFoundException(id);
+        return logic.finish(id);
     }
 
     @PutMapping("/products/cancel/{id}")
     public Product cancelProduction(@PathVariable Long id) {
-        Product product = productRepository.getById(id);
-        if (product.getStatus() == Status.IN_PROGRESS) {
-            return productRepository.save(logic.cancel(product));
-        }
-        throw new ProductNotFoundException(id);
+        return logic.cancel(id);
     }
 
     @PutMapping("/products/undo/{id}")
     public Product undoLastAction(@PathVariable Long id) {
-        Product product = productRepository.getById(id);
-        if (product.getStatus() != Status.WAITING) {
-            return productRepository.save(logic.undoLastAction(product));
-        }
-        throw new ProductNotFoundException(id);
+        return logic.undoLastAction(id);
     }
 }

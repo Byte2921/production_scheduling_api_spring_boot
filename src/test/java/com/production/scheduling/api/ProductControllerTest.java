@@ -35,8 +35,6 @@ class ProductControllerTest {
     @Autowired
     private ObjectMapper mapper;
     @MockBean
-    private ProductRepository productRepository;
-    @MockBean
     private ProductionLogic productionLogic;
 
     Operation operation1 = new Operation("Building");
@@ -76,7 +74,7 @@ class ProductControllerTest {
         products.add(product1);
         products.add(product2);
 
-        Mockito.when(productRepository
+        Mockito.when(productionLogic
                         .findAll())
                 .thenReturn(products);
 
@@ -90,9 +88,9 @@ class ProductControllerTest {
 
     @Test
     void searchingWithExistingIdReturnsProduct() throws Exception {
-        Mockito.when(productRepository
+        Mockito.when(productionLogic
                         .findById(1L))
-                .thenReturn(Optional.of(product1));
+                .thenReturn(product1);
 
         mockMvc.perform(MockMvcRequestBuilders
                         .get("/api/product/tasks/products/1")
@@ -107,8 +105,7 @@ class ProductControllerTest {
 
         product1.setDescription(item.getDescription());
 
-        Mockito.when(productRepository
-                        .save(productionLogic.createNewProduct(item)))
+        Mockito.when(productionLogic.createNewProduct(item))
                 .thenReturn(product1);
 
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.post("/api/product/tasks/products/new")
@@ -124,9 +121,9 @@ class ProductControllerTest {
 
     @Test
     void deleteProductReturnsSuccess() throws Exception {
-        Mockito.when(productRepository
+        Mockito.when(productionLogic
                         .findById(product1.getId()))
-                .thenReturn(Optional.of(product1));
+                .thenReturn(product1);
 
         mockMvc.perform(MockMvcRequestBuilders
                         .delete("/api/product/tasks/products/1")
@@ -138,8 +135,8 @@ class ProductControllerTest {
     void moveProductReturnsSuccess() throws Exception {
         PlannedProductionTime time = new PlannedProductionTime(LocalDateTime.now(), LocalDateTime.now().plusMinutes(100));
 
-        Mockito.when(productRepository
-                        .save(productionLogic.updateProductTimeSpan(time, product1)))
+        Mockito.when(productionLogic
+                        .updateProductTimeSpan(time, product1.getId()))
                 .thenReturn(product1);
 
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.put("/api/product/tasks/products/move/1")
@@ -153,12 +150,8 @@ class ProductControllerTest {
 
     @Test
     void startProductionReturnsSuccess() throws Exception {
-        Mockito.when(productRepository
-                        .getById(1L))
-                .thenReturn(product1);
-
-        Mockito.when(productRepository
-                        .save(productionLogic.start(product1)))
+        Mockito.when(productionLogic
+                        .start(product1.getId()))
                 .thenReturn(product1);
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -169,10 +162,9 @@ class ProductControllerTest {
 
     @Test
     void finishWaitingProductionReturnsNotFound() throws Exception {
-
-        Mockito.when(productRepository
-                        .getById(1L))
-                .thenReturn(product1);
+        Mockito.when(productionLogic
+                        .finish(product1.getId()))
+                .thenThrow(ProductNotFoundException.class);
 
         mockMvc.perform(MockMvcRequestBuilders
                         .put("/api/product/tasks/products/finish/1")
@@ -184,12 +176,8 @@ class ProductControllerTest {
     void cancelProductionReturnsSuccess() throws Exception {
         product1.setStatus(Status.IN_PROGRESS);
 
-        Mockito.when(productRepository
-                        .getById(1L))
-                .thenReturn(product1);
-
-        Mockito.when(productRepository
-                        .save(productionLogic.cancel(product1)))
+        Mockito.when(productionLogic
+                        .cancel(product1.getId()))
                 .thenReturn(product1);
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -202,11 +190,8 @@ class ProductControllerTest {
     void undoLastActionReturnsSuccess() throws Exception {
         product1.setStatus(Status.COMPLETED);
 
-        Mockito.when(productRepository
-                        .getById(1L))
-                .thenReturn(product1);
-        Mockito.when(productRepository
-                        .save(productionLogic.undoLastAction(product1)))
+        Mockito.when(productionLogic
+                        .undoLastAction(product1.getId()))
                 .thenReturn(product1);
 
         mockMvc.perform(MockMvcRequestBuilders
