@@ -188,13 +188,12 @@ public class Product {
         return Objects.equals(id, product.id) && Objects.equals(planStart, product.planStart) && Objects.equals(planEnd, product.planEnd) &&
                 Objects.equals(planDuration, product.planDuration) && Objects.equals(actualStart, product.actualStart) && Objects.equals(actualEnd, product.actualEnd) &&
                 Objects.equals(actualDuration, product.actualDuration) && Objects.equals(description, product.description) && Objects.equals(workplace, product.workplace) &&
-                Objects.equals(operation, product.operation) && Objects.equals(created, product.created) && Objects.equals(createdBy, product.createdBy) && Objects.equals(modified, product.modified) &&
-                Objects.equals(modifiedBy, product.modifiedBy) && status == product.status;
+                Objects.equals(operation, product.operation) && Objects.equals(createdBy, product.createdBy) && Objects.equals(modifiedBy, product.modifiedBy) && status == product.status;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, planStart, planEnd, planDuration, actualStart, actualEnd, actualDuration, description, workplace, operation, created, createdBy, modified, modifiedBy, status);
+        return Objects.hash(id, planStart, planEnd, planDuration, actualStart, actualEnd, actualDuration, description, workplace, operation, createdBy, modifiedBy, status);
     }
 
     @Override
