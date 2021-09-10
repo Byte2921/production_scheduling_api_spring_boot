@@ -1,4 +1,4 @@
-package com.production.scheduling.model;
+package com.production.scheduling.dto;
 
 public enum Status {
 

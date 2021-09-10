@@ -1,5 +1,8 @@
-package com.production.scheduling.logic;
+package com.production.scheduling.service;
 
+import com.production.scheduling.dto.PlannedProductionTime;
+import com.production.scheduling.dto.ScheduleItem;
+import com.production.scheduling.dto.Status;
 import com.production.scheduling.exceptions.ProductNotFoundException;
 import com.production.scheduling.model.*;
 import com.production.scheduling.repository.OperationRepository;
@@ -12,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
@@ -29,7 +33,7 @@ class ProductionLogicTest {
     @Mock
     private OperationRepository operationRepository;
     @InjectMocks
-    private ProductionLogic productionLogic;
+    private ProductionService productionService;
 
     Operation operation1 = new Operation("Building");
     Workplace workplace1 = new Workplace("Building machine");
@@ -75,7 +79,7 @@ class ProductionLogicTest {
         Mockito.when(productRepository
                         .findAll())
                 .thenReturn(prodcuts);
-        assertEquals(prodcuts, productionLogic.findAll());
+        assertEquals(prodcuts, productionService.findAll());
     }
 
     @Test
@@ -83,23 +87,23 @@ class ProductionLogicTest {
         Mockito.when(productRepository
                         .findById(1L))
                 .thenReturn(Optional.of(product1));
-        assertEquals(product1, productionLogic.findById(1L));
+        assertEquals(product1, productionService.findById(1L));
     }
 
     @Test
     void calculateWorkTimeLengthGivesProperMinutesBack() {
         LocalDateTime testTime = LocalDateTime.now();
-        assertEquals(100L, productionLogic.calculateWorkTimeLength(testTime, testTime.plusMinutes(100)));
+        assertEquals(100L, productionService.calculateWorkTimeLength(testTime, testTime.plusMinutes(100)));
     }
 
     @Test
     void calculateWorkTimeLengthReturnsDefaultWorkingTimeWhenSpanIsNegativeOrZero() {
         LocalDateTime testTime = LocalDateTime.now();
-        assertEquals(100L, productionLogic.calculateWorkTimeLength(testTime.plusMinutes(600), testTime));
+        assertEquals(100L, productionService.calculateWorkTimeLength(testTime.plusMinutes(600), testTime));
     }
 
     @Test
-    void createNewProductReturnsProperObject() {
+    void createNewProductReturnsProperObject() throws URISyntaxException {
         ScheduleItem item = new ScheduleItem(LocalDateTime.now(), "Test product", 1L, 1L);
         Product testProduct = new Product();
         testProduct.setPlanStart(item.getPlanStart());
@@ -118,7 +122,7 @@ class ProductionLogicTest {
                         .getById(1L))
                 .thenReturn(workplace1);
 
-        assertEquals(testProduct, productionLogic.createNewProduct(item));
+        assertEquals(testProduct, productionService.createNewProduct(item).getBody());
     }
 
     @Test
@@ -143,7 +147,7 @@ class ProductionLogicTest {
                         .save(testProduct))
                 .thenReturn(testProduct);
 
-        assertEquals(testProduct, productionLogic.updateProductTimeSpan(time, 1L));
+        assertEquals(testProduct, productionService.updateProductTimeSpan(time, 1L));
     }
 
     @Test
@@ -151,7 +155,7 @@ class ProductionLogicTest {
         Mockito.when(productRepository
                         .getById(1L))
                 .thenReturn(product1);
-        assertEquals(Status.IN_PROGRESS, productionLogic.start(1L).getStatus());
+        assertEquals(Status.IN_PROGRESS, productionService.start(1L).getStatus());
     }
 
     @Test
@@ -162,8 +166,8 @@ class ProductionLogicTest {
                         .getById(1L))
                 .thenReturn(product1);
 
-        assertThrows(ProductNotFoundException.class, () ->{
-           productionLogic.start(1L);
+        assertThrows(ProductNotFoundException.class, () -> {
+            productionService.start(1L);
         });
     }
 
@@ -175,7 +179,7 @@ class ProductionLogicTest {
                         .getById(1L))
                 .thenReturn(product1);
 
-        assertEquals(Status.COMPLETED, productionLogic.finish(1L).getStatus());
+        assertEquals(Status.COMPLETED, productionService.finish(1L).getStatus());
     }
 
     @Test
@@ -184,8 +188,8 @@ class ProductionLogicTest {
                         .getById(1L))
                 .thenReturn(product1);
 
-        assertThrows(ProductNotFoundException.class, () ->{
-            productionLogic.cancel(1L);
+        assertThrows(ProductNotFoundException.class, () -> {
+            productionService.cancel(1L);
         });
     }
 
@@ -195,8 +199,8 @@ class ProductionLogicTest {
                         .getById(1L))
                 .thenReturn(product1);
 
-        assertThrows(ProductNotFoundException.class, () ->{
-            productionLogic.undoLastAction(1L);
+        assertThrows(ProductNotFoundException.class, () -> {
+            productionService.undoLastAction(1L);
         });
     }
 }

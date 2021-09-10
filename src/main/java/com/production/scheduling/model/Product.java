@@ -1,6 +1,6 @@
 package com.production.scheduling.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.production.scheduling.dto.Status;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;

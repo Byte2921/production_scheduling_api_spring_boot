@@ -1,30 +1,29 @@
 package com.production.scheduling.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.production.scheduling.dto.PlannedProductionTime;
+import com.production.scheduling.dto.ScheduleItem;
+import com.production.scheduling.dto.Status;
 import com.production.scheduling.exceptions.ProductNotFoundException;
-import com.production.scheduling.logic.ProductionLogic;
+import com.production.scheduling.service.ProductionService;
 import com.production.scheduling.model.*;
-import com.production.scheduling.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -36,7 +35,7 @@ class ProductControllerTest {
     @Autowired
     private ObjectMapper mapper;
     @MockBean
-    private ProductionLogic productionLogic;
+    private ProductionService productionService;
 
     Operation operation1 = new Operation("Building");
     Workplace workplace1 = new Workplace("Building machine");
@@ -75,9 +74,9 @@ class ProductControllerTest {
         products.add(product1);
         products.add(product2);
 
-        Mockito.when(productionLogic
+        Mockito.when(productionService
                         .findAll())
-                .thenReturn(products);
+                .thenReturn(ResponseEntity.ok(products));
 
         mockMvc.perform(MockMvcRequestBuilders
                         .get("/api/product/tasks/products")
@@ -89,9 +88,9 @@ class ProductControllerTest {
 
     @Test
     void searchingWithExistingIdReturnsProduct() throws Exception {
-        Mockito.when(productionLogic
+        Mockito.when(productionService
                         .findById(1L))
-                .thenReturn(product1);
+                .thenReturn(ResponseEntity.ok(product1));
 
         mockMvc.perform(MockMvcRequestBuilders
                         .get("/api/product/tasks/products/1")
@@ -106,10 +105,10 @@ class ProductControllerTest {
 
         product1.setDescription(item.getDescription());
 
-        Mockito.when(productionLogic.createNewProduct(item))
-                .thenReturn(product1);
+        Mockito.when(productionService.createNewProduct(item))
+                .thenReturn(ResponseEntity.ok(product1));
 
-        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.post("/api/product/tasks/products/new")
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.post("/api/product/tasks/products")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(this.mapper.writeValueAsString(item));
@@ -122,9 +121,9 @@ class ProductControllerTest {
 
     @Test
     void deleteProductReturnsSuccess() throws Exception {
-        Mockito.when(productionLogic
+        Mockito.when(productionService
                         .findById(product1.getId()))
-                .thenReturn(product1);
+                .thenReturn(ResponseEntity.ok(product1));
 
         mockMvc.perform(MockMvcRequestBuilders
                         .delete("/api/product/tasks/products/1")
@@ -136,9 +135,9 @@ class ProductControllerTest {
     void moveProductReturnsSuccess() throws Exception {
         PlannedProductionTime time = new PlannedProductionTime(LocalDateTime.now(), LocalDateTime.now().plusMinutes(100));
 
-        Mockito.when(productionLogic
+        Mockito.when(productionService
                         .updateProductTimeSpan(time, product1.getId()))
-                .thenReturn(product1);
+                .thenReturn(ResponseEntity.ok(product1));
 
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.put("/api/product/tasks/products/move/1")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -151,7 +150,7 @@ class ProductControllerTest {
 
     @Test
     void startProductionReturnsSuccess() throws Exception {
-        Mockito.when(productionLogic
+        Mockito.when(productionService
                         .start(product1.getId()))
                 .thenReturn(product1);
 
@@ -164,8 +163,8 @@ class ProductControllerTest {
     @Test
     void finishWaitingProductionReturnsNotFound() throws Exception {
         Mockito.doThrow(ProductNotFoundException.class)
-                        .when(productionLogic)
-                                .finish(1L);
+                .when(productionService)
+                .finish(1L);
 
         mockMvc.perform(MockMvcRequestBuilders
                         .put("/api/product/tasks/products/finish/1")
@@ -177,7 +176,7 @@ class ProductControllerTest {
     void cancelProductionReturnsSuccess() throws Exception {
         product1.setStatus(Status.IN_PROGRESS);
 
-        Mockito.when(productionLogic
+        Mockito.when(productionService
                         .cancel(product1.getId()))
                 .thenReturn(product1);
 
@@ -191,7 +190,7 @@ class ProductControllerTest {
     void undoLastActionReturnsSuccess() throws Exception {
         product1.setStatus(Status.COMPLETED);
 
-        Mockito.when(productionLogic
+        Mockito.when(productionService
                         .undoLastAction(product1.getId()))
                 .thenReturn(product1);
 

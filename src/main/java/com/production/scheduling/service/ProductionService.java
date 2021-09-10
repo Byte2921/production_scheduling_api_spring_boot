@@ -1,22 +1,30 @@
-package com.production.scheduling.logic;
+package com.production.scheduling.service;
 
+import com.production.scheduling.dto.PlannedProductionTime;
+import com.production.scheduling.dto.ScheduleItem;
+import com.production.scheduling.dto.Status;
 import com.production.scheduling.exceptions.ProductNotFoundException;
 import com.production.scheduling.model.*;
 import com.production.scheduling.repository.OperationRepository;
 import com.production.scheduling.repository.ProductRepository;
 import com.production.scheduling.repository.WorkplaceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Component
-public class ProductionLogic {
+@Service
+public class ProductionService {
 
     private static final int DIVIDER = 60;
     private static final long DEFAULT_WORKING_TIME = 100;
+    private static final String URI_PATH = "/api/product/tasks";
     @Autowired
     private OperationRepository operationRepository;
     @Autowired
@@ -24,16 +32,16 @@ public class ProductionLogic {
     @Autowired
     private ProductRepository productRepository;
 
-    public ProductionLogic() {
+    public ProductionService() {
     }
 
-    public List<Product> findAll() {
-        return productRepository.findAll();
+    public ResponseEntity<List<Product>> findAll() {
+        return ResponseEntity.ok(productRepository.findAll());
     }
 
-    public Product findById(Long id) {
-        return productRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException(id));
+    public ResponseEntity<Product> findById(Long id) {
+        return ResponseEntity.ok(productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException(id)));
     }
 
     public Long calculateWorkTimeLength(LocalDateTime planStart, LocalDateTime planEnd) {
@@ -41,31 +49,45 @@ public class ProductionLogic {
         return minutes <= 0 ? DEFAULT_WORKING_TIME : minutes;
     }
 
-    public Product createNewProduct(ScheduleItem scheduleItem) {
-        Product product = new Product();
-        product.setPlanStart(scheduleItem.getPlanStart());
-        product.setPlanEnd(scheduleItem.getPlanStart().plusMinutes(DEFAULT_WORKING_TIME));
-        product.setPlanDuration(calculateWorkTimeLength(product.getPlanStart(), product.getPlanEnd()));
-        product.setDescription(scheduleItem.getDescription());
-        assignWorkplace(product, scheduleItem.getWorkplaceId());
-        assignOperation(product, scheduleItem.getOperationId());
-        signNewProduct(product);
-        productRepository.save(product);
-        return product;
+    public ResponseEntity<Product> createNewProduct(ScheduleItem scheduleItem) throws URISyntaxException {
+        try {
+            Product product = new Product();
+            product.setPlanStart(scheduleItem.getPlanStart());
+            product.setPlanEnd(scheduleItem.getPlanStart().plusMinutes(DEFAULT_WORKING_TIME));
+            product.setPlanDuration(calculateWorkTimeLength(product.getPlanStart(), product.getPlanEnd()));
+            product.setDescription(scheduleItem.getDescription());
+            assignWorkplace(product, scheduleItem.getWorkplaceId());
+            assignOperation(product, scheduleItem.getOperationId());
+            signNewProduct(product);
+            productRepository.save(product);
+            return ResponseEntity.created(new URI(URI_PATH + "/products/" + product.getId())).body(product);
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
     }
 
-    public void deleteById(Long id) {
-        productRepository.deleteById(id);
+    public ResponseEntity<Void> deleteById(Long id) {
+        try {
+            productRepository.deleteById(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception ex) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    public Product updateProductTimeSpan(PlannedProductionTime dates, Long id) {
-        Product product = productRepository.getById(id);
-        product.setPlanStart(dates.getPlanStart());
-        product.setPlanEnd(dates.getPlanEnd());
-        product.setPlanDuration(calculateWorkTimeLength(product.getPlanStart(), product.getPlanEnd()));
-        updateLastModified(product);
-        productRepository.save(product);
-        return product;
+    public ResponseEntity<Product> updateProductTimeSpan(PlannedProductionTime dates, Long id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException(id));
+        try {
+            product.setPlanStart(dates.getPlanStart());
+            product.setPlanEnd(dates.getPlanEnd());
+            product.setPlanDuration(calculateWorkTimeLength(product.getPlanStart(), product.getPlanEnd()));
+            updateLastModified(product);
+            productRepository.save(product);
+            return ResponseEntity.ok(product);
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
     }
 
     private void signNewProduct(Product product) {

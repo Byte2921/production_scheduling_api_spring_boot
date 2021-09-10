@@ -1,6 +1,5 @@
-package com.production.scheduling.model;
+package com.production.scheduling.dto;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 
 public class PlannedProductionTime {
