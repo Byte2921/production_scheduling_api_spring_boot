@@ -1,4 +1,4 @@
-package com.production.scheduling.model;
+package com.production.scheduling.dto;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
