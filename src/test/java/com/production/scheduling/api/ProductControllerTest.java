@@ -152,7 +152,7 @@ class ProductControllerTest {
     void startProductionReturnsSuccess() throws Exception {
         Mockito.when(productionService
                         .start(product1.getId()))
-                .thenReturn(product1);
+                .thenReturn(ResponseEntity.ok(product1));
 
         mockMvc.perform(MockMvcRequestBuilders
                         .put("/api/product/tasks/products/start/1")
@@ -178,7 +178,7 @@ class ProductControllerTest {
 
         Mockito.when(productionService
                         .cancel(product1.getId()))
-                .thenReturn(product1);
+                .thenReturn(ResponseEntity.ok(product1));
 
         mockMvc.perform(MockMvcRequestBuilders
                         .put("/api/product/tasks/products/cancel/1")
@@ -192,7 +192,7 @@ class ProductControllerTest {
 
         Mockito.when(productionService
                         .undoLastAction(product1.getId()))
-                .thenReturn(product1);
+                .thenReturn(ResponseEntity.ok(product1));
 
         mockMvc.perform(MockMvcRequestBuilders
                         .put("/api/product/tasks/products/undo/1")

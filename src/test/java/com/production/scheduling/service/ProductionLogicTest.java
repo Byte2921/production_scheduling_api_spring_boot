@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -79,7 +80,7 @@ class ProductionLogicTest {
         Mockito.when(productRepository
                         .findAll())
                 .thenReturn(prodcuts);
-        assertEquals(prodcuts, productionService.findAll());
+        assertEquals(prodcuts, productionService.findAll().getBody());
     }
 
     @Test
@@ -87,7 +88,7 @@ class ProductionLogicTest {
         Mockito.when(productRepository
                         .findById(1L))
                 .thenReturn(Optional.of(product1));
-        assertEquals(product1, productionService.findById(1L));
+        assertEquals(product1, productionService.findById(1L).getBody());
     }
 
     @Test
@@ -103,7 +104,7 @@ class ProductionLogicTest {
     }
 
     @Test
-    void createNewProductReturnsProperObject() throws URISyntaxException {
+    void createNewProductReturnsProperObject() {
         ScheduleItem item = new ScheduleItem(LocalDateTime.now(), "Test product", 1L, 1L);
         Product testProduct = new Product();
         testProduct.setPlanStart(item.getPlanStart());
@@ -147,7 +148,7 @@ class ProductionLogicTest {
                         .save(testProduct))
                 .thenReturn(testProduct);
 
-        assertEquals(testProduct, productionService.updateProductTimeSpan(time, 1L));
+        assertEquals(testProduct, productionService.updateProductTimeSpan(time, 1L).getBody());
     }
 
     @Test
@@ -155,7 +156,7 @@ class ProductionLogicTest {
         Mockito.when(productRepository
                         .getById(1L))
                 .thenReturn(product1);
-        assertEquals(Status.IN_PROGRESS, productionService.start(1L).getStatus());
+        assertEquals(Status.IN_PROGRESS, Objects.requireNonNull(productionService.start(1L).getBody()).getStatus());
     }
 
     @Test
@@ -179,7 +180,7 @@ class ProductionLogicTest {
                         .getById(1L))
                 .thenReturn(product1);
 
-        assertEquals(Status.COMPLETED, productionService.finish(1L).getStatus());
+        assertEquals(Status.COMPLETED, Objects.requireNonNull(productionService.finish(1L).getBody()).getStatus());
     }
 
     @Test

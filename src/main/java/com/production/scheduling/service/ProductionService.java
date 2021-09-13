@@ -12,14 +12,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
+@Transactional
 public class ProductionService {
 
     private static final int DIVIDER = 60;
@@ -49,7 +52,7 @@ public class ProductionService {
         return minutes <= 0 ? DEFAULT_WORKING_TIME : minutes;
     }
 
-    public ResponseEntity<Product> createNewProduct(ScheduleItem scheduleItem) throws URISyntaxException {
+    public ResponseEntity<Product> createNewProduct(ScheduleItem scheduleItem) {
         try {
             Product product = new Product();
             product.setPlanStart(scheduleItem.getPlanStart());
@@ -108,50 +111,58 @@ public class ProductionService {
         product.setOperation(operationRepository.getById(operationId));
     }
 
-    public Product start(Long id) {
-        Product product = productRepository.getById(id);
-        if (product.getStatus() == Status.WAITING) {
-            product.setStatus(Status.IN_PROGRESS);
+    public ResponseEntity<Product> start(Long id) {
+        Product product = productRepository.findByIdAndStatus(id, Status.WAITING)
+                .orElseThrow(() -> new ProductNotFoundException(id));
+        try {
+            product.setStatus(product.getStatus().next());
             product.setActualStart(LocalDateTime.now());
             updateLastModified(product);
             productRepository.save(product);
-            return product;
+            return ResponseEntity.ok(product);
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        throw new ProductNotFoundException(id);
     }
 
-    public Product finish(Long id) {
-        Product product = productRepository.getById(id);
-        if (product.getStatus() == Status.IN_PROGRESS) {
-            product.setStatus(Status.COMPLETED);
+    public ResponseEntity<Product> finish(Long id) {
+        Product product = productRepository.findByIdAndStatus(id, Status.IN_PROGRESS)
+                .orElseThrow(() -> new ProductNotFoundException(id));
+        try {
+            product.setStatus(product.getStatus().next());
             product.setActualEnd(LocalDateTime.now());
             product.setActualDuration(calculateWorkTimeLength(product.getActualStart(), product.getActualEnd()));
             updateLastModified(product);
             productRepository.save(product);
-            return product;
+            return ResponseEntity.ok(product);
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        throw new ProductNotFoundException(id);
     }
 
-    public Product cancel(Long id) {
-        Product product = productRepository.getById(id);
-        if (product.getStatus() == Status.IN_PROGRESS) {
+    public ResponseEntity<Product> cancel(Long id) {
+        Product product = productRepository.findByIdAndStatus(id, Status.IN_PROGRESS)
+                .orElseThrow(() -> new ProductNotFoundException(id));
+        try {
             product.setStatus(Status.CANCELED);
             updateLastModified(product);
             productRepository.save(product);
-            return product;
+            return ResponseEntity.ok(product);
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        throw new ProductNotFoundException(id);
     }
 
-    public Product undoLastAction(Long id) {
-        Product product = productRepository.getById(id);
-        if (product.getStatus() != Status.WAITING) {
+    public ResponseEntity<Product> undoLastAction(Long id) {
+        Product product = productRepository.findByIdAndStatusNotIn(id, Arrays.asList(Status.CANCELED, Status.WAITING))
+                .orElseThrow(() -> new ProductNotFoundException(id));
+        try {
             product.setStatus(product.getStatus().previous());
             updateLastModified(product);
             productRepository.save(product);
-            return product;
+            return ResponseEntity.ok(product);
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        throw new ProductNotFoundException(id);
     }
 }

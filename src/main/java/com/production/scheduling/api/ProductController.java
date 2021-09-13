@@ -29,7 +29,7 @@ public class ProductController {
     }
 
     @PostMapping("/products")
-    public ResponseEntity<Product> newProduct(@RequestBody ScheduleItem scheduleItem) throws URISyntaxException {
+    public ResponseEntity<Product> newProduct(@RequestBody ScheduleItem scheduleItem) {
         return service.createNewProduct(scheduleItem);
     }
 
@@ -44,22 +44,22 @@ public class ProductController {
     }
 
     @PutMapping("/products/start/{id}")
-    public Product startProduction(@PathVariable Long id) {
+    public ResponseEntity<Product> startProduction(@PathVariable Long id) {
         return service.start(id);
     }
 
     @PutMapping("/products/finish/{id}")
-    public Product finishProduction(@PathVariable Long id) {
+    public ResponseEntity<Product> finishProduction(@PathVariable Long id) {
         return service.finish(id);
     }
 
     @PutMapping("/products/cancel/{id}")
-    public Product cancelProduction(@PathVariable Long id) {
+    public ResponseEntity<Product> cancelProduction(@PathVariable Long id) {
         return service.cancel(id);
     }
 
     @PutMapping("/products/undo/{id}")
-    public Product undoLastAction(@PathVariable Long id) {
+    public ResponseEntity<Product> undoLastAction(@PathVariable Long id) {
         return service.undoLastAction(id);
     }
 }
